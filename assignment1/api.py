@@ -18,7 +18,7 @@ def without_keys(d, *keys):
      return dict(filter(lambda key_value: key_value[0] not in keys, d.items()))
 
 def getFormattedData(data):
-    return json.dumps(data, indent=4).replace(' ', '&nbsp').replace(',\n', ',<br>').replace('\n', '<br>')
+    return json.dumps(data, indent=4)
 
 def saveEtagToDB(id):
     tempDict = bookmarkDict[id]
