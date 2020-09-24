@@ -62,7 +62,7 @@ def getBookmark(id):
             saveEtagToDB(id)
         return Response(getFormattedData(without_keys(bookmarkDict[id],'count','etag')),status=200,mimetype='application/json')
     else:
-        return Response(getFormattedData("{'reason' : 'Id not found'}"), status=404, mimetype='application/json')
+        return Response(status=404)
 
 @app.route('/api/bookmarks/<id>/qrcode', methods=['GET'])
 def getQRCode(id):
@@ -78,7 +78,7 @@ def getQRCode(id):
         url_code.save('url_qrcode.png')
         return send_file('url_qrcode.png',attachment_filename='url_qrcode.png')
     else:
-        return Response(getFormattedData("{'reason' : 'Id not found'}"), status=404, mimetype='application/json')
+        return Response(status=404)
 
 @app.route('/api/bookmarks/<id>', methods=['DELETE'])
 def deleteBookmark(id):                          
@@ -103,7 +103,7 @@ def getBookmarkStats(id):
             response.set_etag(etag)
         return response
     else:
-        return Response(getFormattedData({'reason' : 'Id not found'}), status=404, mimetype='application/json')
+        return Response(status=404)
 
     
 
