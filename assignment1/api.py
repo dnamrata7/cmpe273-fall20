@@ -43,7 +43,7 @@ def addBookmark():
         url=request_data['url']
         id = hashlib.md5(url.encode()).hexdigest()
         if id in bookmarkDict:
-            return Response(getFormattedData({'reason' : 'The given URL already exists in the system.'}), status=400, mimetype='application/json')
+            return Response(getFormattedData({'reason' : 'The given URL already existed in the system.'}), status=400, mimetype='application/json')
         else:
             response_data['id'] = id
             request_data['count'] = 0
@@ -91,7 +91,7 @@ def getBookmarkStats(id):
     if id in bookmarkDict:
         headers = request.headers
         etag = bookmarkDict[id]['etag']
-        if etag in request.if_none_match:
+        if (etag in request.if_none_match) or (etag == headers.get('ETag')):
             return Response(status=304)
         elif etag is None:
             saveEtagToDB(id)
