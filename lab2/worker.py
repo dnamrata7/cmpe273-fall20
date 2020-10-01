@@ -10,5 +10,6 @@ sock_out.connect("tcp://127.0.0.1:5558") # IP of dashboard
 while True:
     num = int(sock_in.recv())
     square_root = num**0.5
-    print("Square root of number %d is %f" % (num,square_root))
-    sock_out.send(str(square_root).encode())
+    result={'num':num, 'square_root' : square_root}
+    sock_out.send_json(result)
+    #print("Square root of number %d is %f" % (num,square_root))
