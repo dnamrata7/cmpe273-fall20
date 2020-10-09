@@ -1,0 +1,21 @@
+Steps:
+  - 1:
+      type: HTTP_CLIENT
+      method: GET
+      outbound_url: https://www.google.com
+      condition:
+        if: 
+          equal:
+            left: http.response.code
+            right: 200
+        then:
+          action: ::print
+          data: http.response.headers.content-type
+        else:
+          action: ::print
+          data: "Error"
+    
+Scheduler:
+  when: "1 * *"
+  step_id_to_execute: [ 1 ]
+

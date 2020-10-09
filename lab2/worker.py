@@ -12,4 +12,4 @@ while True:
     square_root = num**0.5
     result={'num':num, 'square_root' : square_root}
     sock_out.send_json(result)
-    print("Calculating square root of number %d " % (num))
+    print("Calculating & sending square root of number %d " % (num))
