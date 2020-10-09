@@ -3,10 +3,9 @@ import sys
 import schedule
 import time
 from datetime import datetime
-import urllib3
+import requests
 
 days = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday','sunday']
-http = urllib3.PoolManager()
 data={}
 
 # Parse the yaml file 
@@ -43,15 +42,15 @@ def run_scheduler(data):
     
     if day=='*':
         if hr=='*' and min=='*':
-            print("Error: Invalid format")
+            print("Error: Invalid format")                            # * * *
+            
         elif hr=='*' and min != '*':
-            schedule.every(int(min)).minutes.do(job)
+            schedule.every(int(min)).minutes.do(job)                  # 5 * *
         elif int(hr)<= 23 and int(hr)>=0:
-            schedule.every().day.at(time_unit).do(job)
+            schedule.every().day.at(time_unit).do(job)                # * 5 *  or 2 5 *
     elif int(day)<=7 and int(day)>=0:
         if hr=='*' and min != '*':
-            # 2 * 1
-            cmd= "schedule.every()." + days[int(day)] + ".do(day_minutely_job, min)"
+            cmd= "schedule.every()." + days[int(day)] + ".do(day_minutely_job,"+ when[0]+ ")"       # 2 * 1
         else:
             # 2 1 1       * 1 2
             cmd= "schedule.every()." +days[int(day)] + ".at(\"" + time_unit + "\").do(job)"
@@ -76,22 +75,29 @@ def job():
 #Execute the step with given id
 def execute_step(step_id_to_execute,input_data):
     step_data = data['Steps'][int(step_id_to_execute)-1][step_id_to_execute]
-    if step_data['type']== 'HTTP_CLIENT':
+    if step_data['type']== 'HTTP_CLIENT' and step_data['method']=='GET':
         if(input_data is None):
             outbound_url=step_data['outbound_url']
         else:
             outbound_url = input_data
-        response = http.request(step_data['method'],outbound_url)
-        if(response.status==200):
+        response = requests.get(outbound_url)
+        left = step_data['condition']['if']['equal']['left']
+        right = step_data['condition']['if']['equal']['right']
+        if(left=='http.response.code' and right==response.status_code):
             action = step_data['condition']['then']['action'].split(':')
             action_data= step_data['condition']['then']['data']
             if(action[-1]=='print'):
-                print(response.headers[action_data.split('.')[-1]])
+                if action_data.split('.')[-1] in response.headers:
+                    print(response.headers[action_data.split('.')[-1]])
+                else:
+                    print("Specified header data not present")
             elif(action[-3]=='invoke' and action[-2]=='step'):
                 execute_step(int(action[-1]),action_data)
 
         else:
             print("Error")
+    else:
+        print("Error : Only GET method supported")
     
 
 if __name__=="__main__":
