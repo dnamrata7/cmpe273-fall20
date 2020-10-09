@@ -9,17 +9,17 @@ days = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday','
 http = urllib3.PoolManager()
 data={}
 
+# Parse the yaml file 
 def parse_file(fileName):
     with open(fileName, 'r') as stream:
         try:
-            #print(yaml.safe_load(stream))
             global data
             data = yaml.safe_load(stream)
-            #job_schedule ={'minute':when[0],'hour':when[1],'day':when[2]}
             run_scheduler(data)
         except yaml.YAMLError as exc:
             print(exc)
 
+# To schedule the job according to given cron job format 
 def run_scheduler(data):
     when = data['Scheduler']['when'].split()
     min=when[0]
@@ -40,8 +40,6 @@ def run_scheduler(data):
         if int(min)<10:
             min = '0'+min
         time_unit += min
-    #00:1
-    print(time_unit)
     
     if day=='*':
         if hr=='*' and min=='*':
@@ -71,13 +69,11 @@ def day_minutely_job(min):
 
 
 def job():
-    now = datetime.now()
-    current_time = now.strftime("%H:%M:%S")
-    print("Executing job..................Current Time =", current_time)
     for i in data['Scheduler']['step_id_to_execute']:
         execute_step(i,None)
+   
         
-
+#Execute the step with given id
 def execute_step(step_id_to_execute,input_data):
     step_data = data['Steps'][int(step_id_to_execute)-1][step_id_to_execute]
     if step_data['type']== 'HTTP_CLIENT':
@@ -101,8 +97,6 @@ def execute_step(step_id_to_execute,input_data):
 if __name__=="__main__":
     try:
         fileName=sys.argv[1]
-        #isFile(fileName)
-        #print(fileName)
         parse_file(fileName)
         pass
     except Exception as e:
