@@ -80,22 +80,24 @@ def execute_step(step_id_to_execute,input_data):
             outbound_url=step_data['outbound_url']
         else:
             outbound_url = input_data
-        response = requests.get(outbound_url)
-        left = step_data['condition']['if']['equal']['left']
-        right = step_data['condition']['if']['equal']['right']
-        if(left=='http.response.code' and right==response.status_code):
-            action = step_data['condition']['then']['action'].split(':')
-            action_data= step_data['condition']['then']['data']
-            if(action[-1]=='print'):
-                if action_data.split('.')[-1] in response.headers:
-                    print(response.headers[action_data.split('.')[-1]])
-                else:
-                    print("Specified header data not present")
-            elif(action[-3]=='invoke' and action[-2]=='step'):
-                execute_step(int(action[-1]),action_data)
-
-        else:
-            print("Error")
+        try:
+            response = requests.get(outbound_url)
+            left = step_data['condition']['if']['equal']['left']
+            right = step_data['condition']['if']['equal']['right']
+            if(left=='http.response.code' and right==response.status_code):
+                action = step_data['condition']['then']['action'].split(':')
+                action_data= step_data['condition']['then']['data']
+                if(action[-1]=='print'):
+                    if action_data.split('.')[-1] in response.headers:
+                        print(response.headers[action_data.split('.')[-1]])
+                    else:
+                        print("Specified header data not present")
+                elif(action[-3]=='invoke' and action[-2]=='step'):
+                    execute_step(int(action[-1]),action_data)
+            else:
+                print("Error")
+        except requests.exceptions.ConnectionError:
+            print("Please provide valid URL parameter")
     else:
         print("Error : Only GET method supported")
     
