@@ -2,6 +2,8 @@ import zmq
 import time
 import sys
 from itertools import cycle
+from consistent_hashing import ConsistentHashing
+from hrw import HRWHashing
 
 def create_clients(servers):
     producers = {}
@@ -15,7 +17,7 @@ def create_clients(servers):
     
 
 def generate_data_round_robin(servers):
-    print("Starting...")
+    print("Starting processing using round robin...")
     producers = create_clients(servers)
     pool = cycle(producers.values())
     for num in range(10):
@@ -27,13 +29,45 @@ def generate_data_round_robin(servers):
 
 
 def generate_data_consistent_hashing(servers):
-    print("Starting...")
+    print("Starting processing using Consistent hashing...")
     ## TODO
+
+    if(len(servers) <= 0):
+        print("ERROR : No server nodes present")
+        return
+
+    cst_hash = ConsistentHashing()
+    producers = create_clients(servers)
+   
+    for server in servers:
+        cst_hash.add_node(server)
+
+    for num in range(10):
+        data = { 'key': f'key-{num}', 'value': f'value-{num}' }
+        print(f"Sending data:{data}")
+        producers[cst_hash.get_node(str(data))].send_json(data)
+        #next(pool).send_json(data)
+        time.sleep(1)
     print("Done")
     
 def generate_data_hrw_hashing(servers):
-    print("Starting...")
+    print("Starting processing using HRW hashing...")
     ## TODO
+    if(len(servers) <= 0):
+        print("ERROR : No server nodes present")
+        return
+
+    hrw_hash = HRWHashing()
+    producers = create_clients(servers)
+
+    for server in servers:
+        hrw_hash.add_node(server)
+
+    for num in range(10):
+        data = { 'key': f'key-{num}', 'value': f'value-{num}' }
+        print(f"Sending data:{data}")
+        producers[hrw_hash.get_node(str(data))].send_json(data)
+        time.sleep(1)
     print("Done")
     
     

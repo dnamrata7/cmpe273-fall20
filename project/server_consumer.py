@@ -1,6 +1,10 @@
 import zmq
 import sys
+from sqlitedict import SqliteDict
 from  multiprocessing import Process
+import json
+
+dataDict = SqliteDict('./data_db.sqlite',encode=json.dumps, decode=json.loads, autocommit=True)
 
 def server(port):
     context = zmq.Context()
@@ -12,6 +16,8 @@ def server(port):
         key, value = raw['key'], raw['value']
         print(f"Server_port={port}:key={key},value={value}")
         # FIXME: Implement to store the key-value data.
+        dataDict['key']=key
+        dataDict['value'] = value
         
         
 if __name__ == "__main__":
