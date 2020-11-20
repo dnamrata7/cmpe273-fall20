@@ -15,7 +15,7 @@ def server(port):
         raw = consumer.recv_json()
         key, value = raw['key'], raw['value']
         print(f"Server_port={port}:key={key},value={value}")
-        # FIXME: Implement to store the key-value data.
+        # Implementation to store the key-value data.
         dataDict['key']=key
         dataDict['value'] = value
         

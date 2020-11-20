@@ -30,7 +30,6 @@ def generate_data_round_robin(servers):
 
 def generate_data_consistent_hashing(servers):
     print("Starting processing using Consistent hashing...")
-    ## TODO
 
     if(len(servers) <= 0):
         print("ERROR : No server nodes present")
@@ -46,13 +45,12 @@ def generate_data_consistent_hashing(servers):
         data = { 'key': f'key-{num}', 'value': f'value-{num}' }
         print(f"Sending data:{data}")
         producers[cst_hash.get_node(str(data))].send_json(data)
-        #next(pool).send_json(data)
         time.sleep(1)
     print("Done")
     
 def generate_data_hrw_hashing(servers):
     print("Starting processing using HRW hashing...")
-    ## TODO
+   
     if(len(servers) <= 0):
         print("ERROR : No server nodes present")
         return
