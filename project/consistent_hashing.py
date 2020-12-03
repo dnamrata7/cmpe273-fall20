@@ -1,5 +1,6 @@
 import hashlib
 from bisect import bisect, bisect_left, bisect_right
+from hrw import get_hash_value
 
 class ConsistentHashing:
     def __init__(self):
@@ -46,6 +47,30 @@ class ConsistentHashing:
         # return the node present at the index
         return self.nodes[index]
 
+    def remove_node(self,node_addr):
+        """remove_node removes the node and returns the key
+        from the hash space on which the node was placed.
+        """
+
+        # handling error when space is empty
+        if len(self.positions) == 0:
+            raise Exception("hash space is empty")
+
+        key = get_hash_value(node_addr, self.ring_size)
+
+        # we find the index where the key would reside in the keys
+        index = bisect_left(self.positions, key)
+
+        # if key does not exist in the array we raise Exception
+        if index >= len(self.positions) or self.positions[index] != key:
+            raise Exception("node does not exist")
+
+        # now that all sanity checks are done we popping the
+        # keys and nodes at the index and thus removing presence of the node.
+        self.positions.pop(index)
+        self.nodes.pop(index)
+
+        return self.nodes[index]
         
             
 
