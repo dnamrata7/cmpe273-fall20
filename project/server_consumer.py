@@ -6,12 +6,12 @@ import consul
 import docker
 import time
 
-
+# initializations
 dataDict ={}
 docker_client = docker.from_env()
-c=consul.Consul(host='0.0.0.0', dc ='dc1')
+c=consul.Consul(host='0.0.0.0', dc ='dc1')       
 
-
+# register each member with consul on boot up
 def register_with_consul(server_index,port):
     if(server_index==0):
         new_member = c.agent.members()[server_index]
@@ -30,6 +30,7 @@ def server(server_addr,port):
     context = zmq.Context()
     consumer = context.socket(zmq.REP)
     consumer.connect(f"tcp://127.0.0.1:{port}") 
+
 
     while True:
         raw = consumer.recv_json()
@@ -70,16 +71,6 @@ def perform_get_all():
     return response_data
 
 if __name__ == "__main__":
-    # num_server = 1
-    # if len(sys.argv) > 1:
-    #     num_server = int(sys.argv[1])
-    #     print(f"num_server={num_server}")
-        
-    # for each_server in range(num_server):
-    #     server_port = "200{}".format(each_server)
-    #     print(f"Starting a server at:{server_port}...")
-    #     Process(target=server, args=(server_port,)).start()
-    
     master_data = c.agent.members()
 
     global num_server
@@ -88,11 +79,11 @@ if __name__ == "__main__":
     index,data = c.kv.get('cluster_size',index=None)
     cluster_size = int(data['Value'])
     print("Cluster size : ", cluster_size)
-
     cluster_addr = master_data[0]['Addr']
     master_port=master_data[0]['Port']
-    cnt = 101
 
+
+    cnt = 101
     for each_server in range(cluster_size):
         name, server_addr = register_with_consul(each_server,master_port+cnt)
         print("Starting node:{} at {}:{}...".format(name,server_addr,master_port+cnt))
@@ -109,21 +100,6 @@ if __name__ == "__main__":
             num_server = num_server + 1
         time.sleep(10)
   
-    
-    # num_server= int(c.kv.get('num_server'))
-    # #num_server=int(members[0]['Tags']['expect'])
-    # master_port=members[0]['Port']
-    # master_address=members[0]['Addr']
-    # master_dc = members[0]['Tags']['dc']
-
-    # for each_server in range(num_server):
-    #     #name = 'node' + str(each_server)
-    #     port= master_port + each_server
-    #     #c.agent.service.register(name=name,port=port,address=master_address)
-    #     print(f"Starting a server at {master_address}:{port}...")
-    #     Process(target=server, args=(port,each_server)).start()
-        
-    
 
 
 

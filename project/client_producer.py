@@ -18,7 +18,8 @@ producers = {}
 def create_clients(servers):
     context = zmq.Context()
     for server in servers:
-        #print(f"Creating a server connection to {server}...")
+        port = str(server).split(':')[1]
+        #print('Establishing connection with node (port : {}'.format(port))
         producer_conn = context.socket(zmq.REQ)
         producer_conn.bind(server)
         producers[server] = producer_conn
@@ -47,7 +48,6 @@ def generate_data_consistent_hashing(servers):
         return
 
     producers = create_clients(servers)
-   
     
     for server in servers:
         cst_hash.add_node(server)
@@ -81,9 +81,6 @@ def generate_data_hrw_hashing(servers):
     print("Done")
     
 
-# def add_node():
-
-
 def remove_node(node_addr,node_name): 
     server = cst_hash.remove_node(node_addr)
     deleteted_server_data = perform_get_all_by_server(server)['collection']
@@ -92,8 +89,7 @@ def remove_node(node_addr,node_name):
         producers[cst_hash.get_node(str(data))].send_json()
         response = producers[cst_hash.get_node(str(data))].recv_json()
     c.agent.force_leave(node_name)
-
-    
+ 
 
 ############ GET functionality for consitent hashing and HRW hashing #############
 def perform_get_by_key_hrw(key,servers):
@@ -103,23 +99,6 @@ def perform_get_by_key_hrw(key,servers):
     response_data = producers[hrw_hash.get_node(str(data))].recv_json()
     print(response_data)
 
-def perform_get_all(servers):
-    data = {'op':'GET_ALL'}
-    response_data = {}
-    producers = create_clients(servers)
-    for server in servers:
-        producers[server].send_json(data)
-        response_data.append(producers[server].recv_json())
-    print(response_data)
-
-def perform_get_all_by_server(index_server):
-    data = {'op':'GET_ALL'}
-    response_data = {}
-    #producers = create_clients(servers)
-    producers[index_server].send_json(data)
-    response_data = producers[index_server].recv_json()
-    return(response_data)
-
 def perform_get_by_key_cst(key,servers):
     data = {'op':'GET_ONE','key':key}
     producers = create_clients(servers)
@@ -127,29 +106,31 @@ def perform_get_by_key_cst(key,servers):
     response_data = producers[cst_hash.get_node(str(data))].recv_json()
     print(response_data)
 
+def perform_get_all(servers):
+    data = {'op':'GET_ALL'}
+    response_data = []
+    producers = create_clients(servers)
+    for server in servers:
+        producers[server].send_json(data)
+        response_data = response_data + (producers[server].recv_json()['collection'])
+    data = {'collection':response_data}
+    print(data)
 
-
-
+def perform_get_all_by_server(index_server):
+    data = {'op':'GET_ALL'}
+    response_data = {}
+    producers[index_server].send_json(data)
+    response_data = producers[index_server].recv_json()
+    return(response_data)
 
 
 if __name__ == "__main__":
+    cnt = 101
     servers = []
-    # num_server = 1
-    # if len(sys.argv) > 1:
-    #     num_server = int(sys.argv[1])
-    #     print(f"num_server={num_server}")
-        
-    # for each_server in range(num_server):
-    #     server_port = "200{}".format(each_server)
-    #     servers.append(f'tcp://127.0.0.1:{server_port}')
 
-    
-   
-    
     # getting all members in the cluster
     members = c.agent.members()
-    cnt = 101
-
+    
     for each_member in members:
         port = each_member['Port'] + cnt
         address = each_member['Addr']
@@ -166,14 +147,15 @@ if __name__ == "__main__":
     producers.clear()
     
     print('###########################################################')
-    print("Get by key HRW test")
+    print("Get by key HRW test, Key : key-2")
     perform_get_by_key_hrw('key-2',servers)
     producers.clear()
 
-    print("Get by key Consistent hashing test")
+    print("Get by key Consistent hashing test, Key : key-4")
     perform_get_by_key_cst('key-4',servers)
     producers.clear()
 
+    print('-------------------------------------------------------------')
     print("Get all test")
     perform_get_all(servers)
     producers.clear()
